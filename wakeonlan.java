@@ -30,89 +30,87 @@ class WoL {
 	}
 	
 	private byte[] getMacBytes(String macStr) {
-        byte[] bytes = new byte[6];
-        String[] hex = macStr.split("(\\:|\\-)");
+        	byte[] bytes = new byte[6];
+	        String[] hex = macStr.split("(\\:|\\-)");
 
-        if (hex.length != 6) {
-            throw new IllegalArgumentException("Invalid MAC address.");
-        }
+        	if (hex.length != 6) {
+	            throw new IllegalArgumentException("Invalid MAC address.");
+	        }
 
-        try {
-            for (int i = 0; i < 6; i++) {
-                bytes[i] = (byte) Integer.parseInt(hex[i], 16);
-            }
-        } catch (NumberFormatException e) {
-            throw e;
-        }
+	        try {
+        	    for (int i = 0; i < 6; i++) {
+                	bytes[i] = (byte) Integer.parseInt(hex[i], 16);
+	            }
+        	} catch (NumberFormatException e) {
+	            throw e;
+        	}
         
-        return bytes;
-    }
+	        return bytes;
+    	}
 
 	public static boolean validIP (String ip) {
     	try {
-        	if (ip == null || ip.isEmpty()) {
-            	return false;
+		    if (ip == null || ip.isEmpty()) {
+        		return false;
         	}
 
-        	String[] parts = ip.split("\\.");
+	       	String[] parts = ip.split("\\.");
         	if (parts.length != 4) {
-            	return false;
-        	}
+        		return false;
+	       	}
 
         	for(String s : parts) {
-            	int i = Integer.parseInt( s );
-            	if ((i < 0) || (i > 255)) {
-                	return false;
-            	}
+	        	int i = Integer.parseInt( s );
+        		if ((i < 0) || (i > 255)) {
+           			return false;
+		       	}
         	}
 
         	if (ip.endsWith(".")) {
-            	return false;
-        	}
+        		return false;
+	       	}
 
         	return true;
-    	} catch(NumberFormatException e) {
+	    } catch(NumberFormatException e) {
         	return false;
-    	}
+	    }
 	}
 	
 	WoL(String BroadcastIP, String MAC) {
-		   this.setBroadcastIP(BroadcastIP);
-		   this.setMAC(MAC);  
+		this.setBroadcastIP(BroadcastIP);
+		this.setMAC(MAC);  
 	}
 	
 	public void sendMagicPaket() throws Exception, IllegalArgumentException {
 		try {
             byte[] macBytes = getMacBytes(this.MAC);
-            byte[] bytes = new byte[6 + 16 * macBytes.length];
+			byte[] bytes = new byte[6 + 16 * macBytes.length];
 			InetAddress address;
             
-            for(int i = 0; i < 6; i++) {
-                bytes[i] = (byte) 0xff;
-            }
+	        for(int i = 0; i < 6; i++) {
+        	    bytes[i] = (byte) 0xff;
+	        }
             
-            for(int i = 6; i < bytes.length; i += macBytes.length) {
-                System.arraycopy(macBytes, 0, bytes, i, macBytes.length);
-            }
+        	for(int i = 6; i < bytes.length; i += macBytes.length) {
+              	System.arraycopy(macBytes, 0, bytes, i, macBytes.length);
+	        }
             
 			try {
 				if(!validIP(this.BroadcastIP)) {
 					throw new IllegalArgumentException("Not a valid IP address.");
 				} else {
-            		address = InetAddress.getByName(this.BroadcastIP);
+        	   		address = InetAddress.getByName(this.BroadcastIP);
 				}
 			} catch(IllegalArgumentException e) {
 				throw e;
 			}
-			
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, PORT);
-            DatagramSocket socket = new DatagramSocket();
+	    
+			DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, PORT);
+        	DatagramSocket socket = new DatagramSocket();
+	
+        	socket.send(packet);
 
-            socket.send(packet);
-
-            socket.close();
-            
-            System.out.println("Wake-on-LAN packet sent.");
+	    	socket.close();
         } catch(IllegalArgumentException e) {
 			throw e;
         } catch (Exception e) {
